@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>EMEA Finance | Consolidation dashboard</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark">EF</span><span>EMEA Finance</span></div>
+    <div class="topbar-right">
+      <span class="workspace-label">Consolidation workspace</span>
+      <span class="period">FY 2025&nbsp; · &nbsp;Plan</span>
+    </div>
+  </header>
+  <main>
+    <section class="heading">
+      <div>
+        <div class="eyebrow">Regional planning</div>
+        <h1>Territory consolidation</h1>
+        <div class="subtitle">Combine financials across your EMEA markets and compare planning scenarios.</div>
+        <div class="import-help">CSV columns: Territory, Currency, FX to EUR, Revenue, Operating costs · Values in millions of local currency.</div>
+        <div class="import-status" id="import-status" role="status" aria-live="polite"></div>
+      </div>
+      <div class="heading-actions">
+        <button class="button" id="reset-button" type="button">↺&nbsp; Reset</button>
+        <button class="button" id="import-button" type="button">↑&nbsp; Import CSV</button>
+        <input id="import-file" type="file" accept=".csv,text/csv" hidden>
+        <button class="button primary" id="export-button" type="button">↓&nbsp; Export CSV</button>
+      </div>
+    </section>
+
+    <div class="layout">
+      <aside class="panel scenario-panel" aria-label="Scenario and territory controls">
+        <h2 class="section-title">Scenario builder</h2>
+        <p class="section-description">Adjust assumptions to model a consolidated view.</p>
+        <label class="field-label" for="scenario-select">Planning scenario</label>
+        <select id="scenario-select" class="scenario-select">
+          <option value="base">Base plan</option>
+          <option value="upside">Growth case</option>
+          <option value="downside">Downside case</option>
+          <option value="fx">FX neutral</option>
+          <option value="custom">Custom assumptions</option>
+        </select>
+
+        <div class="assumption">
+          <div class="assumption-head"><label for="growth-range">Revenue growth</label><span class="value-pill" id="growth-value">+4.0%</span></div>
+          <input id="growth-range" type="range" min="-20" max="25" step="0.5" value="4">
+          <div class="range-limits"><span>-20%</span><span>+25%</span></div>
+        </div>
+        <div class="assumption">
+          <div class="assumption-head"><label for="cost-range">Cost inflation</label><span class="value-pill" id="cost-value">+3.0%</span></div>
+          <input id="cost-range" type="range" min="-10" max="25" step="0.5" value="3">
+          <div class="range-limits"><span>-10%</span><span>+25%</span></div>
+        </div>
+        <div class="assumption">
+          <div class="assumption-head"><label for="fx-range">FX movement</label><span class="value-pill" id="fx-value">−1.0%</span></div>
+          <input id="fx-range" type="range" min="-15" max="15" step="0.5" value="-1">
+          <div class="range-limits"><span>-15%</span><span>+15%</span></div>
+        </div>
+
+        <div class="divider"></div>
+        <div class="scope-head">
+          <h2 class="section-title">Consolidation scope</h2>
+          <span class="scope-count" id="scope-count">28 / 28</span>
+        </div>
+        <div class="territory-tools">
+          <input class="search" id="territory-search" type="search" placeholder="Find territory" aria-label="Find territory">
+          <button class="text-button" id="select-all" type="button">All</button>
+          <button class="text-button" id="select-none" type="button">None</button>
+        </div>
+        <div class="territory-list" id="territory-list"></div>
+      </aside>
+
+      <section class="content" aria-label="Consolidated financial results">
+        <div class="summary-grid">
+          <article class="card metric-card">
+            <div class="metric-top"><span>Revenue</span><span class="metric-icon">↗</span></div>
+            <div class="metric-value" id="revenue-metric">—</div>
+            <div class="metric-foot"><span class="positive" id="revenue-delta">—</span><span>vs. current plan</span></div>
+          </article>
+          <article class="card metric-card">
+            <div class="metric-top"><span>Operating costs</span><span class="metric-icon" style="color:#be8232;background:#fbf3e7">↘</span></div>
+            <div class="metric-value" id="cost-metric">—</div>
+            <div class="metric-foot"><span id="cost-scope">Across selected territories</span></div>
+          </article>
+          <article class="card metric-card">
+            <div class="metric-top"><span>EBITDA</span><span class="metric-icon" style="color:#526f9b;background:#edf3fa">◒</span></div>
+            <div class="metric-value" id="ebitda-metric">—</div>
+            <div class="metric-foot"><span class="positive" id="ebitda-delta">—</span><span>vs. current plan</span></div>
+          </article>
+          <article class="card metric-card">
+            <div class="metric-top"><span>EBITDA margin</span><span class="metric-icon" style="color:#526f9b;background:#edf3fa">%</span></div>
+            <div class="metric-value" id="margin-metric">—</div>
+            <div class="metric-foot"><span id="margin-delta">—</span><span>percentage points vs. plan</span></div>
+          </article>
+        </div>
+
+        <section class="panel chart-panel" aria-label="Territory comparison chart">
+          <div class="panel-header">
+            <div><h2 class="section-title">Revenue by territory</h2><p class="section-description">Scenario-adjusted revenue and EBITDA · EUR millions</p></div>
+            <div class="chart-legend"><span class="legend-item"><i class="legend-dot"></i>Revenue</span><span class="legend-item"><i class="legend-dot dark"></i>EBITDA</span></div>
+          </div>
+          <div class="chart-wrap"><svg id="chart" role="img" aria-label="Bar chart comparing revenue and EBITDA by territory"></svg></div>
+        </section>
+
+        <section class="panel table-panel">
+          <div class="table-heading">
+            <div><h2 class="section-title">Territory detail</h2><div class="table-meta" id="table-meta">Showing 28 territories · Consolidated in EUR</div></div>
+            <span class="table-meta" id="scenario-caption">Base plan</span>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Territory</th><th>Revenue · EUR m</th><th>Operating costs · EUR m</th><th>EBITDA · EUR m</th><th>Margin</th></tr></thead>
+              <tbody id="results-body"></tbody>
+              <tfoot id="results-foot"></tfoot>
+            </table>
+          </div>
+        </section>
+        <p class="note">Illustrative planning data for demonstration only. Amounts shown in EUR millions; FX assumption applies to non-EUR territories.</p>
+      </section>
+    </div>
+  </main>
+  <script src="app.js" defer></script>
+</body>
+</html>
